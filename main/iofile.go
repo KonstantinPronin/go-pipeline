@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 )
 
@@ -35,12 +36,14 @@ func writeIntoFile(lines []string, path string) (err error) {
 		}
 	}()
 
-	w := bufio.NewWriter(file)
+	w := io.Writer(file)
+
 	for _, line := range lines {
 		_, err = fmt.Fprintln(w, line)
 		if err != nil {
 			return err
 		}
 	}
-	return w.Flush()
+
+	return nil
 }

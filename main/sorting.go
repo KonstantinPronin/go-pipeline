@@ -7,28 +7,24 @@ import (
 	"strings"
 )
 
-func Sorting(lines []string) ([]string, error) {
+func Sorting(lines []string, opt *Options) ([]string, error) {
 	var err error
 
-	if *n {
-		lines, err = IntSorting(lines)
+	if opt.nFlag {
+		lines, err = IntSorting(lines, opt)
 	} else {
-		lines, err = StringSorting(lines, *k)
+		lines, err = StringSorting(lines, opt)
 	}
 
 	if err != nil {
 		return nil, err
 	}
 
-	if *u {
-		lines = DeleteDuplicates(lines)
+	if opt.uFlag {
+		lines = DeleteDuplicates(lines, opt)
 	}
 
-	if *r {
-		lines = Reverse(lines)
-	}
-
-	if *o != "" {
+	if opt.oFlag != "" {
 		return lines, writeIntoFile(lines, *o)
 	}
 
@@ -39,75 +35,85 @@ func Sorting(lines []string) ([]string, error) {
 	return lines, nil
 }
 
-func StringSorting(lines []string, column int) (result []string, err error) {
+func StringSorting(lines []string, opt *Options) (result []string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = r.(error)
 		}
 	}()
 
-	if *f {
-		sort.Slice(sort.StringSlice(lines), func(i, j int) bool {
-			if column < 0 {
-				return strings.ToUpper(lines[i]) < strings.ToUpper(lines[j])
+	if opt.fFlag {
+		sort.Slice(lines, func(i, j int) bool {
+			if opt.kFlag < 0 {
+				return strLess(strings.ToUpper(lines[i]), strings.ToUpper(lines[j]), opt.rFlag)
 			}
 
-			lhs := strings.Split(lines[i], " ")[column]
-			rhs := strings.Split(lines[j], " ")[column]
-			return strings.ToUpper(lhs) < strings.ToUpper(rhs)
+			lhs := strings.Split(lines[i], " ")[opt.kFlag]
+			rhs := strings.Split(lines[j], " ")[opt.kFlag]
+			return strLess(strings.ToUpper(lhs), strings.ToUpper(rhs), opt.rFlag)
 		})
 		return lines, nil
 	}
 
-	sort.Slice(sort.StringSlice(lines), func(i, j int) bool {
-		if column < 0 {
-			return lines[i] < lines[j]
+	sort.Slice(lines, func(i, j int) bool {
+		if opt.kFlag < 0 {
+			return strLess(lines[i], lines[j], opt.rFlag)
 		}
 
-		lhs := strings.Split(lines[i], " ")[column]
-		rhs := strings.Split(lines[j], " ")[column]
-		return lhs < rhs
+		lhs := strings.Split(lines[i], " ")[opt.kFlag]
+		rhs := strings.Split(lines[j], " ")[opt.kFlag]
+		return strLess(lhs, rhs, opt.rFlag)
 	})
 	return lines, nil
 }
 
-func IntSorting(lines []string) ([]string, error) {
-	var numbers []int
-	var result []string
-
-	for _, str := range lines {
-		number, err := strconv.Atoi(str)
-		if err != nil {
-			return nil, err
+func IntSorting(lines []string, opt *Options) (result []string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = r.(error)
 		}
-		numbers = append(numbers, number)
-	}
+	}()
 
-	sort.Ints(numbers)
-	for _, number := range numbers {
-		str := strconv.Itoa(number)
-		result = append(result, str)
-	}
+	sort.Slice(lines, func(i, j int) bool {
+		var lhs, rhs int
 
-	return result, nil
+		if opt.kFlag < 0 {
+			lhs, err = strconv.Atoi(lines[i])
+			rhs, err = strconv.Atoi(lines[j])
+		} else {
+			lhs, err = strconv.Atoi(strings.Split(lines[i], " ")[opt.kFlag])
+			rhs, err = strconv.Atoi(strings.Split(lines[j], " ")[opt.kFlag])
+		}
+
+		return intLess(lhs, rhs, opt.rFlag)
+	})
+
+	return lines, err
 }
 
-func Reverse(lines []string) []string {
-	for i := 0; i < len(lines)/2; i++ {
-		j := len(lines) - 1 - i
-		lines[i], lines[j] = lines[j], lines[i]
+func strLess(lhs, rhs string, reverse bool) bool {
+	if reverse {
+		return lhs > rhs
 	}
 
-	return lines
+	return lhs < rhs
 }
 
-func DeleteDuplicates(lines []string) []string {
+func intLess(lhs, rhs int, reverse bool) bool {
+	if reverse {
+		return lhs > rhs
+	}
+
+	return lhs < rhs
+}
+
+func DeleteDuplicates(lines []string, opt *Options) []string {
 	var result []string
 	lineExist := make(map[string]bool)
 
 	for _, line := range lines {
 		key := line
-		if *f {
+		if opt.fFlag {
 			key = strings.ToUpper(key)
 		}
 		if _, flag := lineExist[key]; !flag {
