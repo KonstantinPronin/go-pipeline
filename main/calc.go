@@ -6,6 +6,15 @@ import (
 	"strconv"
 )
 
+var validChar = map[rune]struct{}{
+	'+': {},
+	'-': {},
+	'*': {},
+	'/': {},
+	'(': {},
+	')': {},
+}
+
 var priority = map[string]int{
 	"+": 1,
 	"-": 1,

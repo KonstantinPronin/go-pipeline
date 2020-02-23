@@ -7,15 +7,6 @@ import (
 	"strings"
 )
 
-var validChar = map[rune]struct{}{
-	'+': {},
-	'-': {},
-	'*': {},
-	'/': {},
-	'(': {},
-	')': {},
-}
-
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("Not enough arguments")
