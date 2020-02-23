@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
+	"strings"
 )
 
 var validChar = map[rune]struct{}{
@@ -16,38 +16,13 @@ var validChar = map[rune]struct{}{
 	')': {},
 }
 
-func Parse(expression string) ([]string, error) {
-	var result []string
-	var err error
-	var number string
-
-	for _, runeValue := range expression {
-		if _, err := strconv.Atoi(string(runeValue)); err == nil {
-			number += string(runeValue)
-		} else if _, ok := validChar[runeValue]; ok {
-			if number != "" {
-				result = append(result, number)
-			}
-			result = append(result, string(runeValue))
-			number = ""
-		} else {
-			err = fmt.Errorf("invalid input")
-		}
-	}
-
-	if number != "" {
-		result = append(result, number)
-	}
-
-	return result, err
-}
-
 func main() {
 	if len(os.Args) < 2 {
 		log.Fatal("Not enough arguments")
 	}
 
-	expression, err := Parse(os.Args[1])
+	argument := strings.Join(os.Args[1:], "")
+	expression, err := Parse(argument)
 	if err != nil {
 		log.Fatal("Invalid input")
 	}

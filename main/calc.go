@@ -13,6 +13,35 @@ var priority = map[string]int{
 	"/": 2,
 }
 
+func Parse(expression string) ([]string, error) {
+	var result []string
+	var err error
+	var number string
+
+	for _, runeValue := range expression {
+		if string(runeValue) == " " {
+			continue
+		} else if _, err = strconv.Atoi(string(runeValue)); err == nil {
+			number += string(runeValue)
+		} else if _, ok := validChar[runeValue]; ok {
+			if number != "" {
+				result = append(result, number)
+			}
+			result = append(result, string(runeValue))
+			number = ""
+		} else {
+			err = fmt.Errorf("invalid input")
+			return nil, err
+		}
+	}
+
+	if number != "" {
+		result = append(result, number)
+	}
+
+	return result, err
+}
+
 func ConvertToRpn(expression []string) []string {
 	var result []string
 	await := stack.New()
